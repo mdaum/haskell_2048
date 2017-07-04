@@ -21,15 +21,13 @@ printState board = do
 getEmptySpots :: [[Int]] -> [(Int,Int)]
 getEmptySpots board = [(floor((fromIntegral x)/4),mod x 4) | x <- (elemIndices 0 $ concat board)]
 
-addSpot :: [[Int]] -> StdGen -> ([[Int]], StdGen)
-addSpot board g = do
-	let { empties = getEmptySpots board ;
-	(spotNum, g1) = randomR (0, length empties-1) g;
-	spot = (empties !! spotNum);
-	(addNum,g2) = randomR (0,9) g1;
-	toAdd = ([2,2,2,2,2,2,2,2,2,4] !! addNum);
-	newBoard = rewriteBoard board spot addNum}
-	return (newBoard, g2)
+addSpot :: [[Int]] -> [[Int]]
+addSpot board = rewriteBoard board spot toAdd
+	where { empties = getEmptySpots board ;
+	spotNum = 5 ;
+	spot = (empties !! spotNum) ;
+	addNum = 4 ;
+	toAdd = ([2,2,2,2,2,2,2,2,2,4] !! addNum) }
 --will rewrite the board with added spot
 rewriteBoard :: [[Int]] -> (Int,Int) -> Int -> [[Int]]
 rewriteBoard board (row,col) toAdd = b4 ++ [target] ++ after
@@ -37,12 +35,12 @@ rewriteBoard board (row,col) toAdd = b4 ++ [target] ++ after
 		  target = take col (board!!row) ++ [toAdd] ++ drop (col +1) (board!!row) ;
 		  after = drop (row+1) board }--everything after target row}
 			  
-gameLoop :: [[Int]] -> StdGen -> IO ()
-gameLoop board g = do
-	(newBoard,newG) <- addSpot board g
+gameLoop :: [[Int]] -> IO ()
+gameLoop board = do
+	let newBoard = addSpot board
 	printState newBoard
 	continue <- getChar
-	gameLoop newBoard newG
+	gameLoop newBoard
 
 isFull :: [[Int]] -> Bool
 isFull board = notElem 0 (concat board)
@@ -53,6 +51,5 @@ main = do
 		putStrLn "use wasd to move"
 		hSetBuffering stdin NoBuffering
 		let board = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
-		g <- newStdGen
-		gameLoop board g
+		gameLoop board
 		
