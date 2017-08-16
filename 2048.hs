@@ -11,6 +11,7 @@ import System.IO
 import System.Random
 import Text.Printf
 import System.Console.ANSI
+import System.IO.Unsafe
 
 
 printState :: [[Int]] -> IO () -- print board
@@ -26,15 +27,11 @@ addSpot board = rewriteBoard board spot toAdd
 	where { empties = getEmptySpots board ;
 	spotNum = getRand (0, length empties-1) ;
 	spot = (empties !! spotNum) ;
-	addNum = 4 ;
+	addNum = getRand(0,9) ;
 	toAdd = ([2,2,2,2,2,2,2,2,2,4] !! addNum) }
 	
 getRand :: (Int,Int) -> Int
-getRand range = toRet
-	where { 
-	g = getStdGen ;
-	toRet = fst $ randomR range g ;
-	trash = setStdGen(snd (next g)) }
+getRand range = unsafePerformIO (getStdRandom (randomR range))
 
 --will rewrite the board with added spot
 rewriteBoard :: [[Int]] -> (Int,Int) -> Int -> [[Int]]
@@ -47,7 +44,7 @@ gameLoop :: [[Int]] -> IO ()
 gameLoop board = do
 	let newBoard = addSpot board
 	printState newBoard
-	continue <- getChar
+	continue <- getLine
 	gameLoop newBoard
 
 isFull :: [[Int]] -> Bool
