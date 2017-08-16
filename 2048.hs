@@ -40,12 +40,41 @@ rewriteBoard board (row,col) toAdd = b4 ++ [target] ++ after
 		  target = take col (board!!row) ++ [toAdd] ++ drop (col +1) (board!!row) ;
 		  after = drop (row+1) board }--everything after target row
 			  
+
+			  
 gameLoop :: [[Int]] -> IO ()
 gameLoop board = do
 	let newBoard = addSpot board
 	printState newBoard
-	continue <- getLine
-	gameLoop newBoard
+	action <- getAction ['w', 'a', 's', 'd']
+	let newerBoard = handleAction action newBoard
+	gameLoop newerBoard
+	
+getAction :: [Char] -> IO Char
+getAction chars = do
+	c <- hGetChar stdin
+	if (c `elem` chars) then return c else getAction chars
+
+handleAction :: Char -> [[Int]] -> [[Int]]
+handleAction 'w' board = moveUp board
+handleAction 'a' board = moveLeft board
+handleAction 's' board = moveDown board
+handleAction 'd' board = moveRight board
+handleAction _ board = board
+
+
+moveUp :: [[Int]] -> [[Int]]
+moveUp board = board
+
+moveDown :: [[Int]] -> [[Int]]
+moveDown board = board
+
+moveRight :: [[Int]] -> [[Int]]
+moveRight board = board
+
+moveLeft :: [[Int]] -> [[Int]]
+moveLeft board = board
+	
 
 isFull :: [[Int]] -> Bool
 isFull board = notElem 0 (concat board)
