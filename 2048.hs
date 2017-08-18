@@ -48,7 +48,8 @@ gameLoop board = do
 	printState newBoard
 	action <- getAction ['w', 'a', 's', 'd']
 	let newerBoard = handleAction action newBoard
-	gameLoop newerBoard
+	let over = checkGameOver newerBoard
+	if (over) then putStrLn "game over" else gameLoop newerBoard
 	
 getAction :: [Char] -> IO Char
 getAction chars = do
@@ -60,24 +61,34 @@ handleAction 'w' board = moveUp board
 handleAction 'a' board = moveLeft board
 handleAction 's' board = moveDown board
 handleAction 'd' board = moveRight board
-handleAction _ board = board
 
 
 moveUp :: [[Int]] -> [[Int]]
-moveUp board = board
+moveUp board = transpose $ moveLeft $ transpose board 
 
 moveDown :: [[Int]] -> [[Int]]
-moveDown board = board
+moveDown board = transpose $ moveRight $ transpose board
 
 moveRight :: [[Int]] -> [[Int]]
-moveRight board = board
+moveRight board = map (reverse.move.reverse) board
 
 moveLeft :: [[Int]] -> [[Int]]
-moveLeft board = board
+moveLeft board = map move board
+
+move :: [Int] -> [Int] -- will move a row left...to be used by rest of directions
+move [] = []
+move (x:[]) = [x]
+move (0:xs) = move xs ++ [0]
+move (x:0:xs) = (move (x:xs)) ++ [0]
+move(x:y:xs) | x == y = ((x + y) : (move xs)) ++ [0]
+			 | otherwise = (x:(move (y:xs)))
 	
 
 isFull :: [[Int]] -> Bool
 isFull board = notElem 0 (concat board)
+
+checkGameOver:: [[Int]] -> Bool
+checkGameOver board = (isFull $ moveLeft board) && (isFull $ moveRight board) && (isFull $ moveUp board) && (isFull $ moveDown board)
 
 main :: IO ()
 main = do
